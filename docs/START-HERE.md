@@ -257,6 +257,24 @@ later need the agent inside your own environment, OpenClaw itself is open source
 built on, and can be pointed at Claude. That is a real project; decide it after the personal brain has
 run for a month.
 
+**Side note: an awesome system built on Scout.** The thing Scout has that nothing else does is
+always-on plus cross-app plus its own identity plus policy enforced at write time. The system that
+uses all four is a **commitment ledger**: every promise made in a Teams thread, an email, or a meeting
+transcript gets extracted, attributed, given a due date, and chased, with the ledger living as
+`commitments/` pages in the brain so you can read and correct it. Around it, four standing jobs:
+
+1. **Decision capture.** Meeting transcripts are ingested into `decisions/` the same day, contradictions
+   with earlier decisions flagged, so the org's decision log writes itself.
+2. **Pre-meeting briefs.** Fifteen minutes before each meeting, one page: what was decided last time,
+   what each attendee committed to, what is overdue, drawn from the wiki, not the calendar invite.
+3. **Drift report.** Weekly: things said versus things done. Commitments with no matching activity in
+   the repos, the tickets, or the threads.
+4. **The loop.** Your thumbs up or down on each brief is the metric; the brief prompt is the target.
+
+Purview labels mean the ledger never leaks a sensitive thread into a brief for the wrong audience, and
+Scout's own Entra identity means every chase message is attributable to the agent, not to you. Those
+two properties are why this belongs on Scout rather than on a home-built agent.
+
 Sources: [Introducing Microsoft Scout](https://www.microsoft.com/en-us/microsoft-365/blog/2026/06/02/introducing-microsoft-scout-your-always-on-personal-agent/), Microsoft 365 Blog, June 2026.
 
 ## Live test
