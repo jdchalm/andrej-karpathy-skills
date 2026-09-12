@@ -1,0 +1,5 @@
+{
+  "clarity": {"base": 5.0, "per_word_per_sentence": -0.10},
+  "evidence": {"base": 1.0, "per_citation": 1.0, "single_source_cap": 5},
+  "structure": {"base": 1.0, "per_paragraph": 0.6, "per_transition": 0.2, "conclusion_bonus": 0.0}
+}

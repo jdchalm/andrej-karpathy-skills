@@ -1,0 +1,9 @@
+commit	score	status	description
+4a60802	0.8917	baseline	starting weights
+4a60802	0.8917	discard	apply wiki single-source cap: evidence capped at 3 for <=1 citation
+38efb0c	0.9083	keep	steepen sentence-length slope to -0.15, base 6.5
+38efb0c	0.8917	discard	reward a conclusion: +1.0
+38efb0c	0.8917	discard	raise per_citation to 1.5
+7048198	0.9250	keep	per_paragraph 0.5, per_transition 0.3
+7048198	0.9167	discard	clarity slope -0.2, base 7.5
+7048198	0.9000	discard	evidence base 0.5

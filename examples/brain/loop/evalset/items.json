@@ -1,0 +1,12 @@
+[
+  {"id": "e01", "features": {"words_per_sentence": 12, "citations": 3, "paragraphs": 5, "transitions": 4, "has_conclusion": 1}, "human": {"clarity": 5, "evidence": 4, "structure": 5}},
+  {"id": "e02", "features": {"words_per_sentence": 24, "citations": 1, "paragraphs": 4, "transitions": 1, "has_conclusion": 1}, "human": {"clarity": 3, "evidence": 3, "structure": 3}},
+  {"id": "e03", "features": {"words_per_sentence": 18, "citations": 6, "paragraphs": 5, "transitions": 2, "has_conclusion": 0}, "human": {"clarity": 4, "evidence": 5, "structure": 2}},
+  {"id": "e04", "features": {"words_per_sentence": 30, "citations": 0, "paragraphs": 1, "transitions": 0, "has_conclusion": 0}, "human": {"clarity": 2, "evidence": 1, "structure": 1}},
+  {"id": "e05", "features": {"words_per_sentence": 15, "citations": 2, "paragraphs": 4, "transitions": 3, "has_conclusion": 1}, "human": {"clarity": 4, "evidence": 4, "structure": 4}},
+  {"id": "e06", "features": {"words_per_sentence": 20, "citations": 1, "paragraphs": 3, "transitions": 2, "has_conclusion": 1}, "human": {"clarity": 3, "evidence": 3, "structure": 3}},
+  {"id": "e07", "features": {"words_per_sentence": 10, "citations": 4, "paragraphs": 6, "transitions": 5, "has_conclusion": 1}, "human": {"clarity": 5, "evidence": 5, "structure": 5}},
+  {"id": "e08", "features": {"words_per_sentence": 22, "citations": 2, "paragraphs": 3, "transitions": 0, "has_conclusion": 0}, "human": {"clarity": 3, "evidence": 3, "structure": 2}},
+  {"id": "e09", "features": {"words_per_sentence": 14, "citations": 1, "paragraphs": 5, "transitions": 4, "has_conclusion": 1}, "human": {"clarity": 4, "evidence": 3, "structure": 5}},
+  {"id": "e10", "features": {"words_per_sentence": 27, "citations": 3, "paragraphs": 2, "transitions": 1, "has_conclusion": 1}, "human": {"clarity": 2, "evidence": 4, "structure": 3}}
+]
