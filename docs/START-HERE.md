@@ -207,48 +207,55 @@ expensive loop.
 | keep / revert | git keeps the commit if the metric rose, resets it otherwise |
 | CLAUDE.md | the agent's standing instructions; here it also defines the four operations |
 
-## 8. An AI Center of Excellence, Microsoft Scout, and whether to build your own
+## 8. An AI chief of staff: with Microsoft Scout, or Claude-based
+
+Assumption: AICOS means an AI chief of staff, the always-on personal agent with memory that Microsoft
+Scout is an instance of.
 
 **What Scout is.** Microsoft's first "Autopilot": an always-on agent with its own governed Entra identity,
 grounded in Teams, Outlook, OneDrive and SharePoint, that "builds context powered by Work IQ, learning
-how you work." Purview labels and loss prevention are enforced before it reads or writes. It is built
-on OpenClaw, an open-source local-agent platform, and needs Frontier enrollment, Intune policy, an opt-in
+how you work." Purview labels and loss prevention are enforced before it reads or writes. Built on
+OpenClaw, an open-source local-agent platform. Needs Frontier enrollment, Intune policy, an opt-in
 attestation, and a GitHub Copilot license for the desktop piece.
 
-**How it relates to the brain.** Scout's memory is Work IQ: a graph Microsoft builds from your tenant,
-that you cannot read, lint, or move. The brain is memory you own: markdown in git, readable, lintable,
-vendor-neutral. They are complementary. Scout is the personal work agent for the office side, calendar,
-email, meetings. The brain is project memory for the engineering side. The bridge is simple: keep the
-wiki folder somewhere Scout is allowed to read, a SharePoint-synced folder or a repo its GitHub Copilot
-license can see, and both agents read the same source of truth. Nothing else needs integrating.
+**What a chief of staff needs, and where the brain fits.** Four things: a memory of you, an inbox of
+signals, standing jobs, and a way to tell whether its work was useful. The brain is the first one, and
+it is the one Scout does not let you own.
 
-**What the CoE owns.** Not a platform. Four standards and one folder:
+| A chief of staff needs | Scout gives you | The brain gives you |
+|---|---|---|
+| memory: priorities, people, decisions, open commitments | Work IQ, built from your tenant, not readable or editable by you | a wiki you can read, correct, lint, and move: `people/`, `projects/`, `decisions/`, `commitments/` |
+| inbox: email, calendar, chat, repos | Teams, Outlook, OneDrive, SharePoint, natively | whatever you drop in raw, or what a connector reads |
+| standing jobs: prep meetings, chase open loops, brief you | Autopilot jobs, always on, own identity | a scheduled Routine that runs ingest, query, lint |
+| feedback: was the brief useful | none exposed | the loop: target is the briefing prompt, metric is your 1 to 5 rating over a week |
 
-| The CoE owns | Concretely |
-|---|---|
-| the schema | the wiki rules block in CLAUDE.md, versioned, one copy every team uses |
-| the scaffold | `tools/new_brain.sh`, so every brain has the same shape |
-| the metric catalog | the table of allowed targets and metrics; teams pick, the CoE approves new rows |
-| the review rules | never auto-merge, never edit eval.py, one metric, morning read |
-| the CoE brain | a brain whose raw/ is every team's decisions pages and lint reports: the graph of graphs |
+**The personal brain.** Same scaffold, different node types:
 
-Memory policy sits with the CoE too: what may enter raw (no secrets, same access rules as the repo),
-retention, who may ingest, and which wiki folders Scout is allowed to read.
+```bash
+bash tools/new_brain.sh ~/brain-cos "chief of staff"
+```
 
-**Should you build a Claude-based Scout?** Not now, and not as a product. Three reasons:
+Set the page folders to `people/`, `projects/`, `decisions/`, `commitments/`. Raw is your 1:1 notes,
+meeting notes, weekly priorities, exported threads. Ingest daily, query any time ("what did I promise
+X, and when"), lint weekly for commitments with no date and people pages with no recent source.
 
-1. Scout's value is the Microsoft 365 plumbing: identity, Purview, Intune, the data connectors. That is
-   a platform play you cannot cheaply replicate and would not want to maintain.
-2. The part worth owning is the memory, and that is already vendor-neutral. A brain works with Scout,
-   with Claude Code, and with whatever comes next.
-3. The always-on behaviour you want on the engineering side is already available: a Claude Code
-   Routine that runs `ingest`, `lint`, and `run_loop.sh` on a schedule, reading the same wiki. That is
-   a scheduled command, not a product.
+**With Scout.** Keep the brain in a SharePoint-synced folder Scout is allowed to read. Scout does the
+office plumbing and the always-on jobs; the brain is the memory it is grounded on and the one you can
+correct when it is wrong. Nothing else needs integrating.
 
-So: build the memory, rent the autopilots. Revisit only if Frontier's terms or data residency do not fit,
-or if you need the agent to run inside your own environment. In that case the honest option is OpenClaw
-itself, which is open source and is what Scout is built on, pointed at Claude. That is a real project,
-and it is the CoE's call after the cheap loops have paid for themselves, not before.
+**Claude-based.** Buildable today from parts already in Claude Code: a brain folder, connectors for
+mail, calendar and chat, a scheduled Routine that fires each weekday morning, and a morning-brief
+artifact. The Routine reads the connectors, ingests into the brain, writes the brief, and reads your
+rating of yesterday's brief as the loop's metric. That is a scheduled session with a prompt, not a
+product.
+
+**Should you build the Claude one?** Yes for the side of your work that lives in GitHub, Slack, or
+Google, because it is cheap and you own the memory. No for the side that lives in Microsoft 365, where
+Scout's identity, Purview and connector plumbing is the value and is not worth replicating. Either way
+the brain is the same folder, so you are not choosing a vendor, only which autopilot reads it. If you
+later need the agent inside your own environment, OpenClaw itself is open source, is what Scout is
+built on, and can be pointed at Claude. That is a real project; decide it after the personal brain has
+run for a month.
 
 Sources: [Introducing Microsoft Scout](https://www.microsoft.com/en-us/microsoft-365/blog/2026/06/02/introducing-microsoft-scout-your-always-on-personal-agent/), Microsoft 365 Blog, June 2026.
 
