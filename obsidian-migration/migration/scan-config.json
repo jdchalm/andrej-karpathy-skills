@@ -1,0 +1,26 @@
+{
+  "sections": {
+    "Work/Meetings": "mine",
+    "Work/Clients": "mine",
+    "Work/Finance": "private",
+    "Personal": "skip"
+  },
+  "hard_patterns": {
+    "card_number": "\\b(?:\\d[ -]?){13,19}\\b",
+    "ssn": "\\b\\d{3}-\\d{2}-\\d{4}\\b",
+    "credential": "(?i)\\b(password|passwd|pwd|api[_ -]?key|secret|token)\\b\\s*[:=]\\s*\\S+",
+    "private_key": "-----BEGIN [A-Z ]*PRIVATE KEY-----"
+  },
+  "soft_patterns": {
+    "money": "[$€£]\\s?\\d[\\d,]*(?:\\.\\d{2})?|\\b\\d[\\d,]*\\s?(?:USD|EUR|GBP)\\b",
+    "email": "[\\w.+-]+@[\\w-]+\\.[\\w.]+",
+    "phone": "\\b(?:\\+?1[ -.]?)?\\(?\\d{3}\\)?[ -.]?\\d{3}[ -.]?\\d{4}\\b"
+  },
+  "keywords": [
+    "confidential",
+    "NDA",
+    "salary",
+    "termination",
+    "lawsuit"
+  ]
+}
