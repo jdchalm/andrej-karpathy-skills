@@ -8,12 +8,14 @@ Each page is classified:
     private  - a hard pattern matched, or the page's section is marked private in the config
     flagged  - a soft pattern or keyword matched; needs LLM review then human approval
     clean    - nothing matched
+    skip     - the page's section is marked skip in the config; promote leaves it alone
 
 The verdict is written into the page's frontmatter as `scan: <verdict>` and
 summarised in the report. The script never moves or deletes files.
 """
 
 import argparse
+import fnmatch
 import json
 import re
 import sys
@@ -36,9 +38,19 @@ def section_of(page, root):
     return "/".join(rel.parts[:-1])
 
 
+def rule_for(section, cfg):
+    for pattern, rule in cfg["sections"].items():
+        if fnmatch.fnmatch(section, pattern):
+            return rule
+    return cfg.get("default", "skip")
+
+
 def classify(text, section, cfg):
     hits = []
-    if cfg["sections"].get(section) == "private":
+    rule = rule_for(section, cfg)
+    if rule == "skip":
+        return "skip", ["section:skip"]
+    if rule == "private":
         hits.append("section:private")
     for name, rx in cfg["hard"].items():
         if rx.search(text):
@@ -57,7 +69,7 @@ def write_verdict(page, text, verdict):
     m = FRONTMATTER.match(text)
     if not m:
         return  # no frontmatter; report only
-    fm = re.sub(r"^scan:.*\n?", "", m.group(1), flags=re.M)
+    fm = re.sub(r"^scan:.*\n?", "", m.group(1), flags=re.M).rstrip("\n")
     new = f"---\n{fm}\nscan: {verdict}\n---\n" + text[m.end():]
     page.write_text(new)
 
@@ -79,15 +91,25 @@ def main():
         if not args.dry_run:
             write_verdict(page, text, verdict)
 
-    counts = {v: sum(1 for r in rows if r[0] == v) for v in ("private", "flagged", "clean")}
+    counts = {v: sum(1 for r in rows if r[0] == v) for v in ("private", "flagged", "clean", "skip")}
     lines = ["# Sensitivity scan report", "",
-             f"private: {counts['private']}  flagged: {counts['flagged']}  clean: {counts['clean']}", ""]
-    for verdict in ("private", "flagged", "clean"):
+             f"private: {counts['private']}  flagged: {counts['flagged']}  clean: {counts['clean']}  skip: {counts['skip']}", ""]
+    # private and flagged are listed per page; clean is only counted per section,
+    # otherwise the report is thousands of lines at this volume.
+    for verdict in ("private", "flagged"):
         lines.append(f"## {verdict}")
         for v, rel, hits in rows:
             if v == verdict:
                 lines.append(f"- `{rel}`" + (f" — {', '.join(hits)}" if hits else ""))
         lines.append("")
+    lines.append("## clean (count per section)")
+    per_section = {}
+    for v, rel, _ in rows:
+        if v == "clean":
+            per_section[rel.parent] = per_section.get(rel.parent, 0) + 1
+    for sec, n in sorted(per_section.items()):
+        lines.append(f"- `{sec}`: {n}")
+    lines.append("")
     Path(args.report).write_text("\n".join(lines))
     print(f"{len(rows)} pages: {counts}")
     return 0

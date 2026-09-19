@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """Selectively export OneNote sections to quarantine via the Microsoft Graph API.
 
+Built for volume: hundreds of sections, thousands of pages. Resumable (skips
+pages already on disk), throttled, and filterable by year so you can migrate
+one year at a time.
+
 Setup (one time):
     1. Register an app at https://entra.microsoft.com → App registrations.
        Platform: "Mobile and desktop applications", redirect URI
@@ -10,21 +14,25 @@ Setup (one time):
        export ONENOTE_TENANT=common     # or your tenant id
 
 Usage:
-    python export_onenote_graph.py --list                      # print notebook/section names
-    python export_onenote_graph.py --config scan-config.json --out quarantine/
+    python export_onenote_graph.py --list > sections.txt      # inventory first
+    python export_onenote_graph.py --config scan-config.json --out quarantine/ --year 2019
+    python export_onenote_graph.py --config scan-config.json --out quarantine/   # everything
 
-Only sections marked "mine" or "private" in the config are exported.
+Section rules come from scan-config.json ("sections" patterns + "default").
 Output: quarantine/<notebook>/<section>/<page>.md with frontmatter.
+Re-run after any failure; existing files are skipped.
 
-Untested against a live tenant in this repo. Expect to adjust pagination or
-HTML quirks on first run.
+Untested against a live tenant in this repo. Expect to adjust the HTML
+conversion on first run.
 """
 
 import argparse
+import fnmatch
 import json
 import os
 import re
 import sys
+import time
 from pathlib import Path
 
 import msal
@@ -33,6 +41,7 @@ from markdownify import markdownify
 
 GRAPH = "https://graph.microsoft.com/v1.0/me/onenote"
 SCOPES = ["Notes.Read"]
+PAUSE = 0.25  # seconds between page fetches; Graph throttles OneNote hard
 
 
 def token():
@@ -49,9 +58,16 @@ def token():
 
 
 def get(url, tok, raw=False):
-    r = requests.get(url, headers={"Authorization": f"Bearer {tok}"}, timeout=60)
-    r.raise_for_status()
-    return r.text if raw else r.json()
+    for attempt in range(6):
+        r = requests.get(url, headers={"Authorization": f"Bearer {tok}"}, timeout=60)
+        if r.status_code in (429, 503):
+            wait = int(r.headers.get("Retry-After", 2 ** attempt))
+            print(f"  throttled, waiting {wait}s", file=sys.stderr)
+            time.sleep(wait)
+            continue
+        r.raise_for_status()
+        return r.text if raw else r.json()
+    sys.exit(f"gave up on {url}")
 
 
 def paged(url, tok):
@@ -67,6 +83,14 @@ def sections(tok):
             yield nb["displayName"], sec["displayName"], sec["id"]
 
 
+def rule_for(path, cfg):
+    """First matching glob in cfg['sections'] wins, else cfg['default']."""
+    for pattern, rule in cfg["sections"].items():
+        if fnmatch.fnmatch(path, pattern):
+            return rule
+    return cfg.get("default", "skip")
+
+
 def safe(name):
     return re.sub(r"[^\w\- ]+", "_", name).strip() or "untitled"
 
@@ -74,11 +98,15 @@ def safe(name):
 def export_section(nb, sec, sec_id, tok, out):
     folder = out / safe(nb) / safe(sec)
     folder.mkdir(parents=True, exist_ok=True)
-    n = 0
-    for page in paged(f"{GRAPH}/sections/{sec_id}/pages?$select=id,title,createdDateTime,lastModifiedDateTime", tok):
+    done = skipped = 0
+    for page in paged(f"{GRAPH}/sections/{sec_id}/pages?$select=id,title,createdDateTime,lastModifiedDateTime&$top=100", tok):
+        title = page.get("title") or "untitled"
+        target = folder / f"{safe(title)}--{page['id'][-8:]}.md"  # id suffix: duplicate titles are common
+        if target.exists():
+            skipped += 1
+            continue
         html = get(f"{GRAPH}/pages/{page['id']}/content", tok, raw=True)
         body = markdownify(html, heading_style="ATX").strip()
-        title = page.get("title") or "untitled"
         fm = "\n".join([
             "---",
             "type: inbox",
@@ -91,9 +119,10 @@ def export_section(nb, sec, sec_id, tok, out):
             "---",
             "",
         ])
-        (folder / f"{safe(title)}.md").write_text(fm + f"# {title}\n\n{body}\n")
-        n += 1
-    print(f"{nb}/{sec}: {n} pages")
+        target.write_text(fm + f"# {title}\n\n{body}\n")
+        done += 1
+        time.sleep(PAUSE)
+    print(f"{nb}/{sec}: {done} exported, {skipped} already present")
 
 
 def main():
@@ -101,6 +130,7 @@ def main():
     ap.add_argument("--list", action="store_true")
     ap.add_argument("--config")
     ap.add_argument("--out", type=Path, default=Path("quarantine"))
+    ap.add_argument("--year", help="only sections whose notebook or section name contains this year")
     args = ap.parse_args()
 
     tok = token()
@@ -111,9 +141,12 @@ def main():
 
     if not args.config:
         sys.exit("--config required unless --list")
-    wanted = json.loads(Path(args.config).read_text())["sections"]
+    cfg = json.loads(Path(args.config).read_text())
     for nb, sec, sec_id in sections(tok):
-        if wanted.get(f"{nb}/{sec}") in ("mine", "private"):
+        path = f"{nb}/{sec}"
+        if args.year and args.year not in path:
+            continue
+        if rule_for(path, cfg) in ("mine", "private"):
             export_section(nb, sec, sec_id, tok, args.out)
     return 0
 

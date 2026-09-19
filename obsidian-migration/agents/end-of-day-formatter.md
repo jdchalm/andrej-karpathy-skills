@@ -17,7 +17,7 @@ Safety, in order:
    a `## Unsorted` heading at the bottom of the note it came from.
 
 Scope: files modified today (`git log --since=midnight --name-only` plus
-untracked files), excluding 90-private/.
+untracked files), excluding 90-private/ and 80-migrated/.
 
 For each file:
 - Add or repair frontmatter per VAULT-SPEC. Set `updated` to today.

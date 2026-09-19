@@ -13,8 +13,9 @@ vault/
   30-entities/    People, clients, vendors, products. One note each, by name.
   40-projects/    One note per project or initiative, by name.
   50-reference/   Stable how-to and reference material.
-  80-migrated/    Notes promoted from OneNote, in original section subfolders. Reorganize by hand over time.
+  80-migrated/    Notes promoted from OneNote, as <notebook>/<section>/ (so by year and month). Reorganize by hand over time.
   90-private/     Sensitive. Never shared with cloud agents. Never touched by the formatter.
+    migrated/     Private OneNote pages, same <notebook>/<section>/ layout.
   99-archive/     Closed projects, stale entities.
 ```
 
@@ -66,4 +67,8 @@ Any agent that writes must:
 
 ## Sensitivity
 
-A note is private if it contains any of: credentials, account or card numbers, a named person or client together with money figures, or anything from a OneNote section listed as private in `migration/scan-config.json`. Private notes go in `90-private/` and nowhere else.
+A note is private if it contains any of: credentials, account or card numbers, a named person or client together with money figures, or anything from a OneNote section matched as private in `migration/scan-config.json`. Private notes go in `90-private/` and nowhere else.
+
+## Migrated content
+
+`80-migrated/` is large (20 years). Agents may read it and link to it but must not reorganize, retag, or template it. The formatter's scope excludes it. Anything worth restructuring gets copied into `30-entities/` or `40-projects/` by the human, with a link back.

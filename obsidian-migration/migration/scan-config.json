@@ -1,9 +1,10 @@
 {
+  "_comment": "sections: glob patterns matched against 'Notebook/Section', first match wins. Values: mine | private | skip. default applies when nothing matches. Build the patterns from `export_onenote_graph.py --list`.",
+  "default": "mine",
   "sections": {
-    "Work/Meetings": "mine",
-    "Work/Clients": "mine",
-    "Work/Finance": "private",
-    "Personal": "skip"
+    "*/Finance*": "private",
+    "*/Personal*": "skip",
+    "Personal*/*": "skip"
   },
   "hard_patterns": {
     "card_number": "\\b(?:\\d[ -]?){13,19}\\b",
